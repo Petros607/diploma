@@ -1,3 +1,4 @@
+# app/models/transcript.py
 from sqlalchemy import Column, Integer, String
 from app.database import Base
 

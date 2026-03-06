@@ -1,3 +1,4 @@
+# app/routers/lectures.py
 from fastapi import APIRouter, Request, Query, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 import hashlib
