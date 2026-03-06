@@ -1,14 +1,22 @@
 # app/main.py
 from fastapi import FastAPI
-# Импортируем наш новый модуль с роутером
-from app.routers import users
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
+from app.routers import users, lectures
 
-app = FastAPI(title="My Architecture App")
+app = FastAPI(title="Капибара - Конспекты лекций")
 
-# Подключаем роутер к главному приложению.
-# Это похоже на подключение плагина.
+# Подключаем статические файлы
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# Подключаем шаблоны
+templates = Jinja2Templates(directory="app/templates")
+
+# Подключаем роутеры
 app.include_router(users.router)
+app.include_router(lectures.router)
 
 @app.get("/")
-def root():
-    return {"message": "Приложение работает!"}
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
