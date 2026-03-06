@@ -8,7 +8,7 @@ def process_lecture(url: str):
     slides_url = parser.get_data(url)
     parser.download_image(slides_url)
     audio_path = parser.download_audio(slides_url)
-    length = parser.get_length(audio_path)
+    length = parser.get_length(str(audio_path))
 
     metadata = parser.get_metadata(url)
     return metadata

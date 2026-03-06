@@ -1,3 +1,4 @@
+# tests/0_test_parser.py
 import pathlib
 from app.services.parser_service import ParserService
 
@@ -20,7 +21,7 @@ def test_parser_download():
     assert audio_path.exists(), "Аудио не скачалось"
     
     # Получаем длительность аудио
-    length = parser.get_length(audio_path)
+    length = parser.get_length(str(audio_path))
     assert length > 0, "Неверная длительность аудио"
     
     # Получаем метаданные
