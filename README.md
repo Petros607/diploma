@@ -90,3 +90,15 @@ uvicorn app.main:app --reload
 ```
 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 ```
+
+---
+
+# Запуск тестов
+
+```
+pytest -vs ./tests/0_test_parser.py
+```
+
+```
+pytest -vs ./tests/*
+```
