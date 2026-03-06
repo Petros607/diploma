@@ -1,5 +1,7 @@
 # app/models/summary.py
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, ForeignKey, Text
+from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 
@@ -8,5 +10,8 @@ class Summary(Base):
 
     id = Column(Integer, primary_key=True)
 
-    annotation = Column(Text)
-    summary_path = Column(String)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
+
+    content = Column(Text)
+
+    lecture = relationship("Lecture", back_populates="summary")

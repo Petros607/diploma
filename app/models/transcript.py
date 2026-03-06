@@ -1,5 +1,7 @@
 # app/models/transcript.py
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, ForeignKey, Text
+from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 
@@ -8,5 +10,8 @@ class Transcript(Base):
 
     id = Column(Integer, primary_key=True)
 
-    audio_file = Column(String)
-    transcript_path = Column(String)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
+
+    text = Column(Text)
+
+    lecture = relationship("Lecture", back_populates="transcript")

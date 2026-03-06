@@ -11,7 +11,7 @@ class Request(Base):
 
     id = Column(Integer, primary_key=True)
 
-    lecture_id = Column(Integer, ForeignKey("lectures.id"))
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
 
     status = Column(String)
 

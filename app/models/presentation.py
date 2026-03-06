@@ -1,5 +1,7 @@
 # app/models/presentation.py
-from sqlalchemy import Column, Integer, String, JSON
+from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy.orm import relationship
+
 from app.database import Base
 
 
@@ -8,5 +10,8 @@ class Presentation(Base):
 
     id = Column(Integer, primary_key=True)
 
-    slide_timings = Column(JSON)
-    presentation_path = Column(String)
+    lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
+
+    file_path = Column(String)
+
+    lecture = relationship("Lecture", back_populates="presentation")
