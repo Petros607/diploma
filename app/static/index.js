@@ -66,6 +66,8 @@ function set_lections(lections) {
             <div class="lection_name_teacher">${lections[key]["name_teacher"]}</div>
             <div class="lection_title">${lections[key]["name_subject"]}</div>
             <div class="lection_time">${lections[key]["datetime"]}</div>
+            <div class="lection_length">${lections[key]["length"]}</div>
+            <div class="lection_users_count">${lections[key]["users_count"]} users</div>
             <div class="lection_download_btn">
                 <a href="#"
                     onclick="downloadLecture('${lection_url}', event)"
@@ -126,40 +128,3 @@ function downloadLecture(lection_url, event) {
             overlay.style.display = "none";
         });
 }
-
-// Для тестирования можно использовать пример данных
-const json = {
-    "lection_0": {
-        "id": null,
-        "name_file": null,
-        "name_teacher": "Грешняков Павел Иванович",
-        "url": "https://bbb.ssau.ru:8443/playback/presentation/2.3/cf5215d4ed77ac8f39337081f34c2a49a413621d-1649044933105",
-        "name_subject": "Робототехнические комплексы",
-        "datetime": "Apr 04, 2022 4:02am",
-        "lenght": null,
-        "path": "что-то",
-        "size": null
-    },
-    "lection_1": {
-        "id": null,
-        "name_file": null,
-        "name_teacher": "Грешняков Павел Иванович",
-        "url": "https://bbb.ssau.ru:8443/playback/presentation/2.3/cf5215d4ed77ac8f39337081f34c2a49a413621d-1645415216551",
-        "name_subject": "Робототехнические комплексы",
-        "datetime": "Feb 21, 2022 3:46am",
-        "lenght": null,
-        "path": null,
-        "size": null
-    },
-    "lection_2": {
-        "id": null,
-        "name_file": null,
-        "name_teacher": "Грешняков Павел Иванович",
-        "url": "https://bbb.ssau.ru:8443/playback/presentation/2.3/cf5215d4ed77ac8f39337081f34c2a49a413621d-1636948468965",
-        "name_subject": "Робототехнические комплексы",
-        "datetime": "Nov 15, 2021 3:54am",
-        "lenght": null,
-        "path": null,
-        "size": null
-    }
-};

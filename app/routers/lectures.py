@@ -34,8 +34,6 @@ async def get_list(
             detail="Не удалось получить данные комнаты"
         )
 
-    # {'lecture_0': {'name_teacher': 'Жданова Александра Николаевна', 'url': 'https://bbb.ssau.ru:8443/playback/presentation/2.3/bc140f637937d69f1ce2f7b836745e4c24131f16-1747630362721', 'name_subject': 'ИТ-практикум', 'datetime': 'May 19, 2025 08:52am', 'datetime_utc': '2025-05-19T04:52:42Z', 'length': '6 h 7 min', 'users_count': 117},
-    #  'lecture_1': {'name_teacher': 'Жданова Александра Николаевна', 'url': 'https://bbb.ssau.ru:8443/playback/presentation/2.3/bc140f637937d69f1ce2f7b836745e4c24131f16-1739530683456', 'name_subject': 'ИТ-практикум', 'datetime': 'Feb 14, 2025 02:58pm', 'datetime_utc': '2025-02-14T10:58:03Z', 'length': '1 h 4 min', 'users_count': 28}}
     result = {}
 
     for key, lecture_data in metadata.items():
@@ -71,7 +69,8 @@ async def get_list(
             "name_subject": lecture_data["name_subject"],
             "datetime": lecture_data["datetime"],
             "url": lecture_url,
-            "path": path,
+            "length": lecture_data["length"],
+            "users_count": lecture_data["users_count"],
             "status": status
         }
     return result
