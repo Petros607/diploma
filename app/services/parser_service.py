@@ -2,13 +2,13 @@
 import pathlib
 import os
 import urllib
-import subprocess
 import json
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from datetime import datetime
 import pytz
+from pymediainfo import MediaInfo
 
 PATH_files = pathlib.Path("data/temp")
 
@@ -37,15 +37,14 @@ class ParserService:
         urllib.request.urlretrieve(audio_url, path_id / "audio/lecture.webm")
         return path_id / "audio/lecture.webm"
     
-    def get_length(self, path: str):
-        result = subprocess.run(
-            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-             "-of", "default=noprint_wrappers=1:nokey=1", path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT
-        )
-        duration = result.stdout.decode('utf-8').strip()
-        return float(duration)
+    def get_length(self, path: str) -> float:
+        media_info = MediaInfo.parse(path)
+
+        for track in media_info.tracks:
+            if track.track_type == "Video":
+                return float(track.duration) / 1000
+
+        return 0.0
 
     def download_image(self, url: str):
         i = 1
@@ -86,7 +85,6 @@ class ParserService:
             return data
 
         for row in table.find_all("tr"):
-
             time_tag = row.find("time")
             link_tag = row.find("a", class_="btn btn-sm btn-primary")
 
@@ -126,9 +124,7 @@ class ParserService:
     def get_metadata(self, url: str):
         """Парсинг комнаты предмета и получение метаданных всех лекций."""
         data = {}
-
         base_url = url.split("?")[0]
-
         response = requests.get(base_url, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -143,9 +139,7 @@ class ParserService:
         ).get_text(strip=True).replace(" (Владелец)", "")
 
         pages = []
-
         nav = soup.find("nav", class_="pagy-bootstrap-nav")
-
         if nav:
             for link in nav.find_all("a")[1:-1]:
                 href = link.get("href")
@@ -155,7 +149,6 @@ class ParserService:
         index = 0
 
         for page in pages:
-
             response = requests.get(page, timeout=10)
             soup = BeautifulSoup(response.text, "html.parser")
 
@@ -166,7 +159,6 @@ class ParserService:
                 data,
                 index
             )
-
             index = len(data)
 
         return data
