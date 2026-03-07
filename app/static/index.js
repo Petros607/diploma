@@ -1,9 +1,21 @@
 const overlay = document.getElementById("overlay");
 
 document.getElementById('searchButton').addEventListener('click', function() {
-    const url = document.getElementById('urlInput');
-    url_value = url.value;
+    const urlInput = document.getElementById('urlInput');
+    const url_value = urlInput.value.trim();
+
+    if (!url_value) {
+        document.getElementById('response').innerText = 'Пожалуйста, введите URL.';
+        return;
+    }
+
+    if (!url_value.startsWith('https://bbb.ssau.ru/b/')) {
+        document.getElementById('response').innerText = 'Пожалуйста, введите корректную ссылку на комнату BBB (начинается с https://bbb.ssau.ru/b/)';
+        return;
+    }
+
     simulate_loading();
+
     if (url_value) {
         fetch(`/lectures/list?url_room=${encodeURIComponent(url_value)}`)
             .then(response => {
@@ -19,6 +31,7 @@ document.getElementById('searchButton').addEventListener('click', function() {
                 } else {
                     set_lections(data);
                 }
+                document.getElementById('response').innerText = '';
             })
             .catch(error => {
                 overlay.style.display = "none";
@@ -55,10 +68,10 @@ function set_lections(lections) {
             <div class="lection_time">${lections[key]["datetime"]}</div>
             <div class="lection_download_btn">
                 <a href="#"
-                onclick="downloadLecture('${lection_url}', event)"
-                class="lecture_download_a"
-                style="${disabled}">
-                ${buttonText}
+                    onclick="downloadLecture('${lection_url}', event)"
+                    class="lecture_download_a"
+                    style="${disabled}">
+                    ${buttonText}
                 </a>
             </div>
         `;
