@@ -39,7 +39,7 @@ class Lecture(Base):
         cascade="all, delete"
     )
 
-    processing_requests = relationship(
+    requests = relationship(
         "Request",
         back_populates="lecture",
         cascade="all, delete"

@@ -5,7 +5,7 @@ document.getElementById('searchButton').addEventListener('click', function() {
     url_value = url.value;
     simulate_loading();
     if (url_value) {
-        fetch(`/get_list?url_room=${encodeURIComponent(url_value)}`)
+        fetch(`/lectures/list?url_room=${encodeURIComponent(url_value)}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Ошибка сервера');
@@ -36,14 +36,30 @@ function set_lections(lections) {
         const lection = document.createElement("div");
         lection.className = "lections";
         let lection_url = lections[key]["url"];
-        let buttonText = lections[key]['path'] == null ? 'Сгенерировать' : 'Скачать';
-        
+        let status = lections[key]['status'];
+        let buttonText = "Сгенерировать";
+        let disabled = "";
+
+        if (status === "download") {
+            buttonText = "Скачать";
+        }
+
+        if (status === "processing") {
+            buttonText = "Генерируется...";
+            disabled = "pointer-events:none;opacity:0.6;";
+        }
+
         lection.innerHTML = `
             <div class="lection_name_teacher">${lections[key]["name_teacher"]}</div>
             <div class="lection_title">${lections[key]["name_subject"]}</div>
             <div class="lection_time">${lections[key]["datetime"]}</div>
             <div class="lection_download_btn">
-                <a href="#" onclick="downloadLecture('${lection_url}', event)" class="lecture_download_a">${buttonText}</a>
+                <a href="#"
+                onclick="downloadLecture('${lection_url}', event)"
+                class="lecture_download_a"
+                style="${disabled}">
+                ${buttonText}
+                </a>
             </div>
         `;
         parent_elem.appendChild(lection);
