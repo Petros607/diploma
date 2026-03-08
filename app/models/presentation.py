@@ -10,5 +10,5 @@ class Presentation(Base):
     id = Column(Integer, primary_key=True)
     lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
     slides_timings = Column(JSON)
-    file_path = Column(String)
+    presentation_path = Column(String)
     lecture = relationship("Lecture", back_populates="presentation")
