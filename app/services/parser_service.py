@@ -50,7 +50,7 @@ class ParserService:
             return fallback
     
     def download_audio(self, lecture_url: str) -> pathlib.Path:
-        """Скачивает аудио/видео лекции.
+        """Скачивает аудио/видео лекции и конвертирует в MP3.
         Args:
             lecture_url: URL лекции на BigBlueButton.
         Returns:
@@ -64,15 +64,19 @@ class ParserService:
         )
         save_dir = self.PATH_FILES / recording_id / "audio"
         os.makedirs(save_dir, exist_ok=True)
-        wav_path = save_dir / "lecture.wav"
+        mp3_path = save_dir / "lecture.mp3"
+
         response = self.session.get(audio_url, stream=True)
         response.raise_for_status()
+
         container = av.open(response.raw)
-        audio_stream = next(
-            s for s in container.streams if s.type == "audio"
+        audio_stream = next(s for s in container.streams if s.type == "audio")
+
+        output = av.open(str(mp3_path), "w")
+        out_stream = output.add_stream(
+            codec_name="mp3", rate=audio_stream.rate, 
+            layout='mono', bit_rate = 64000, format = 's16p'
         )
-        output = av.open(str(wav_path), "w")
-        out_stream = output.add_stream("pcm_s16le", rate=audio_stream.rate)
         for frame in container.decode(audio_stream):
             packet = out_stream.encode(frame)
             if packet:
@@ -82,8 +86,8 @@ class ParserService:
             output.mux(packet)
         output.close()
         container.close()
-        return wav_path
-    
+        return mp3_path
+
     def get_length(self, path: str | pathlib.Path) -> float:
         """Получает длительность медиафайла в секундах.
         Args:

@@ -39,6 +39,32 @@ class SpeechService:
         uri = f"https://storage.yandexcloud.net/{self.bucket}/{object_name}"
         return uri
     
+    def get_filelist(self) -> list[dict]:
+        """Получение списка файлой в Object Storage"""
+        response = self.s3.list_objects_v2(
+            Bucket=self.bucket
+        )
+        files = []
+        for obj in response['Contents']:
+            files.append({
+                'name': obj['Key'],
+                'size': obj['Size'],
+                'last_modified': obj['LastModified']
+            })
+        return files
+    
+    def delete_file(self, filename: str) -> bool:
+        """Удаление файла из Object Storage"""
+        try:
+            self.s3.delete_object(
+                Bucket=self.bucket,
+                Key=filename
+            )
+            return True
+        except Exception as e:
+            print(f"Ошибка при удалении файла {filename}: {e}") #TODO: logger
+            return False
+    
     def start_recognition(self, file_uri: str):
         """Запуск асинхронного распознавания"""
         payload = {
@@ -85,7 +111,7 @@ class SpeechService:
                 print("Операция завершена")
                 return
             print("Ожидание распознавания...")
-            time.sleep(3)
+            time.sleep(10)
 
     def get_result(self, operation_id: str):
         """Получение результата распознавания"""
@@ -99,7 +125,7 @@ class SpeechService:
     def transcribe(self, local_audio_path: str):
         """Полный пайплайн транскрипции"""
         uri = self.upload_file(local_audio_path)
-        # uri = f"https://storage.yandexcloud.net/{self.bucket}/speech1.wav"
+        # uri = f"https://storage.yandexcloud.net/{self.bucket}/speech1.mp3"
         operation_id = self.start_recognition(uri)
         self.wait_operation(operation_id)
         # operation_id = "f8dkofp338du4hst4ekc"
