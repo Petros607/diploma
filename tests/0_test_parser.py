@@ -42,7 +42,7 @@ def test_download_audio(parser, lecture_url):
     print(f"Длина видео: {length} секунд")
 
     assert audio_path.exists()
-    assert audio_path.name == "lecture.webm"
+    assert audio_path.name == "lecture.wav"
 
     assert isinstance(length, float)
     assert length > 0

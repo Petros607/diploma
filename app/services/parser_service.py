@@ -9,7 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import pytz
-from pymediainfo import MediaInfo
+import av
 
 class ParserService:
     BASE_URL = "https://bbb.ssau.ru:8443"
@@ -48,7 +48,55 @@ class ParserService:
             return formatted.replace("AM", "am").replace("PM", "pm")
         except Exception:
             return fallback
-
+    
+    def download_audio(self, lecture_url: str) -> pathlib.Path:
+        """Скачивает аудио/видео лекции.
+        Args:
+            lecture_url: URL лекции на BigBlueButton.
+        Returns:
+            Путь к сохранённому аудиофайлу.
+        Raises:
+            requests.HTTPError: Если при скачивании произошла ошибка.
+        """
+        recording_id = self._extract_recording_id(lecture_url)
+        audio_url = (
+            f"{self.BASE_URL}/presentation/{recording_id}/video/webcams.webm"
+        )
+        save_dir = self.PATH_FILES / recording_id / "audio"
+        os.makedirs(save_dir, exist_ok=True)
+        wav_path = save_dir / "lecture.wav"
+        response = self.session.get(audio_url, stream=True)
+        response.raise_for_status()
+        container = av.open(response.raw)
+        audio_stream = next(
+            s for s in container.streams if s.type == "audio"
+        )
+        output = av.open(str(wav_path), "w")
+        out_stream = output.add_stream("pcm_s16le", rate=audio_stream.rate)
+        for frame in container.decode(audio_stream):
+            packet = out_stream.encode(frame)
+            if packet:
+                output.mux(packet)
+        packet = out_stream.encode(None)
+        if packet:
+            output.mux(packet)
+        output.close()
+        container.close()
+        return wav_path
+    
+    def get_length(self, path: str | pathlib.Path) -> float:
+        """Получает длительность медиафайла в секундах.
+        Args:
+            path: Путь к медиафайлу.
+        Returns:
+            Длительность файла в секундах.
+        """
+        container = av.open(str(path))
+        stream = next(s for s in container.streams if s.type == "audio")
+        duration = float(stream.duration * stream.time_base)
+        container.close()
+        return duration
+    
     def get_slides_url(self, lecture_url: str) -> str:
         """Извлечение базовый URL для скачивания слайдов лекции.
         Args:
@@ -67,42 +115,6 @@ class ParserService:
             f"{presentation_id}/svgs/slide"
         )
         return slides_base
-    
-    def download_audio(self, lecture_url: str) -> pathlib.Path:
-        """Скачивает аудио/видео лекции.
-        Args:
-            lecture_url: URL лекции на BigBlueButton.
-        Returns:
-            Путь к сохранённому аудиофайлу.
-        Raises:
-            requests.HTTPError: Если при скачивании произошла ошибка.
-        """
-        recording_id = self._extract_recording_id(lecture_url)
-        audio_url = (
-            f"{self.BASE_URL}/presentation/{recording_id}/video/webcams.webm"
-        )
-        save_dir = self.PATH_FILES / recording_id / "audio"
-        os.makedirs(save_dir, exist_ok=True)
-        save_path = save_dir / "lecture.webm"
-        with self.session.get(audio_url, stream=True) as response:
-            response.raise_for_status()
-            with open(save_path, "wb") as f:
-                for chunk in response.iter_content(8192):
-                    f.write(chunk)
-        return save_path
-    
-    def get_length(self, path: str | pathlib.Path) -> float:
-        """Получает длительность медиафайла в секундах.
-        Args:
-            path: Путь к медиафайлу.
-        Returns:
-            Длительность файла в секундах. 0.0, если длительность не определена.
-        """
-        media_info = MediaInfo.parse(path)
-        for track in media_info.tracks:
-            if track.track_type == "Video" and track.duration:
-                return float(track.duration) / 1000
-        return 0.0
     
     def download_slides(self, lecture_url: str) -> pathlib.Path:
         """Скачивает все слайды лекции.
@@ -135,14 +147,12 @@ class ParserService:
         index: int
     ) -> dict[str, dict]:
         """Парсит страницу с записями лекций.
-        
         Args:
             soup: Объект BeautifulSoup с HTML страницы.
             teacher_name: Имя преподавателя.
             subject_title: Название предмета.
             data: Словарь для накопления результатов.
             start_index: Начальный индекс для добавления записей.
-        
         Returns:
             Обновлённый словарь с данными лекций.
         """
