@@ -1,4 +1,4 @@
-# app/schemas/parser_service.py
+# app/services/parser_service.py
 """Сервис для парсинга и загрузки лекций с BigBlueButton."""
 
 import pathlib
@@ -201,14 +201,10 @@ class ParserService:
         base_url = url.split("?")[0]
         response = requests.get(base_url, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
-        subject_title = soup.find(
-            "h1",
-            class_="display-3 text-left mb-3 font-weight-400"
-        ).get_text(strip=True)
-        teacher_name = soup.find(
-            "h5",
-            id="room-owner-name"
-        ).get_text(strip=True).replace(" (Владелец)", "")
+        subject_title = soup.find("h1", class_="display-3 text-left mb-3 font-weight-400")
+        if subject_title: subject_title = subject_title.get_text(strip=True) or "Без названия"
+        teacher_name = soup.find("h5", id="room-owner-name")
+        if teacher_name: teacher_name = teacher_name.get_text(strip=True).replace(" (Владелец)", "") or "Без имени"
         pages = []
         nav = soup.find("nav", class_="pagy-bootstrap-nav")
         if nav:
