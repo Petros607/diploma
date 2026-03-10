@@ -122,12 +122,47 @@ class SpeechService:
         response.raise_for_status()
         return response.text
     
+    def ms_to_time(self, ms: int) -> str:
+        seconds = ms // 1000
+        minutes = seconds // 60
+        seconds = seconds % 60
+        return f"{minutes:02d}:{seconds:02d}"
+    
+    def parse_result(self, raw_result: str) -> str:
+        """Преобразование ответа SpeechKit в читаемый текст"""
+        lines = raw_result.strip().split("\n")
+        segments = []
+        seen = set()
+        for line in lines:
+            data = json.loads(line)
+            result = data.get("result", {})
+            if "final" not in result:
+                continue
+
+            alt = result["final"]["alternatives"][0]
+            start = int(alt["startTimeMs"])
+            end = int(alt["endTimeMs"])
+            text = alt["text"]
+
+            key = (start, end)
+            if key in seen:
+                continue
+            seen.add(key)
+
+            segments.append((start, end, text))
+        formatted = []
+
+        for start, end, text in segments:
+            formatted.append(
+                f"{self.ms_to_time(start)} - {self.ms_to_time(end)}\n{text}"
+            )
+        return "\n".join(formatted)
+    
     def transcribe(self, local_audio_path: str):
         """Полный пайплайн транскрипции"""
         uri = self.upload_file(local_audio_path)
-        # uri = f"https://storage.yandexcloud.net/{self.bucket}/speech1.mp3"
         operation_id = self.start_recognition(uri)
         self.wait_operation(operation_id)
-        # operation_id = "f8dkofp338du4hst4ekc"
         text = self.get_result(operation_id)
-        return text
+        formatted = self.parse_result(text)
+        return formatted

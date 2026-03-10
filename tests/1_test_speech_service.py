@@ -16,7 +16,7 @@ def speeches_folder():
 
 
 def test_transcription(service, speeches_folder):
-    filename = "speech3.wav"
+    filename = "speech1.mp3"
     result = service.transcribe(f"{speeches_folder}{filename}")
     print("\nРаспознанный текст:")
     print(result)
