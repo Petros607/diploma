@@ -45,11 +45,21 @@ class SpeechService:
             "uri": file_uri,
             "recognition_model": {
                 "model": "general",
-                "audio_format": {
-                    "container_audio": {
-                        "container_audio_type": "WAV"
+                "audioFormat": {
+                    "containerAudio": {
+                        "containerAudioType": "MP3"
                     }
+                },
+                "languageRestriction": {
+                    "restrictionType": "WHITELIST",
+                    "languageCode": ["ru-RU"]
+                },
+                "textNormalization": {
+                    "textNormalization": "TEXT_NORMALIZATION_DISABLED"
                 }
+            },
+            "speakerLabeling": {
+                "speakerLabeling": "SPEAKER_LABELING_DISABLED"
             }
         }
         response = requests.post(
@@ -77,42 +87,6 @@ class SpeechService:
             print("Ожидание распознавания...")
             time.sleep(3)
 
-    def parse_yandex_stt_response(self, response_text):
-        """Парсинг ответа Yandex SpeechKit в формате NDJSON"""
-        chunks = []
-        
-        for line_num, line in enumerate(response_text.strip().split('\n'), 1):
-            if not line.strip():
-                continue
-                
-            try:
-                chunk = json.loads(line)
-                chunks.append(chunk)
-                
-                # Выводим информацию о чанке
-                print(f"\n--- Чанк {line_num} ---")
-                print(json.dumps(chunk, indent=2, ensure_ascii=False))
-                
-                # Извлекаем текст, если есть
-                if "result" in chunk:
-                    result = chunk["result"]
-                    if "final" in result:
-                        alternatives = result["final"].get("alternatives", [])
-                        if alternatives:
-                            print(f"Текст: {alternatives[0].get('text', '')}")
-                    elif "finalRefinement" in result:
-                        refinement = result["finalRefinement"]
-                        if "normalizedText" in refinement:
-                            alt = refinement["normalizedText"].get("alternatives", [])
-                            if alt:
-                                print(f"Нормализованный текст: {alt[0].get('text', '')}")
-                                
-            except json.JSONDecodeError as e:
-                print(f"Ошибка в чанке {line_num}: {e}")
-                print(f"Проблемная строка: {line[:200]}...")
-        
-        return chunks
-
     def get_result(self, operation_id: str):
         """Получение результата распознавания"""
         response = requests.get(
@@ -120,24 +94,7 @@ class SpeechService:
             headers=self.headers
         )
         response.raise_for_status()
-        chunks = self.parse_yandex_stt_response(response.text)
-    
-        # Собираем все тексты
-        full_text = ""
-        for chunk in chunks:
-            try:
-                if "result" in chunk:
-                    result = chunk["result"]
-                    if "finalRefinement" in result:
-                        alt = result["finalRefinement"]["normalizedText"]["alternatives"][0]
-                        full_text += " " + alt["text"]
-                    elif "final" in result:
-                        alt = result["final"]["alternatives"][0]
-                        full_text += " " + alt["text"]
-            except (KeyError, IndexError):
-                continue
-        
-        return full_text.strip()
+        return response.text
     
     def transcribe(self, local_audio_path: str):
         """Полный пайплайн транскрипции"""
