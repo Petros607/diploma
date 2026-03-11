@@ -14,7 +14,7 @@ import av
 class ParserService:
     BASE_URL = "https://bbb.ssau.ru:8443"
     SAMARA_TZ = pytz.timezone("Europe/Samara")
-    PATH_FILES = pathlib.Path("data/temp")
+    PATH_FILES = pathlib.Path("data/")
 
     def __init__(self) -> None:
         """Инициализирует сессию для HTTP-запросов."""
@@ -49,12 +49,13 @@ class ParserService:
         except Exception:
             return fallback
     
-    def download_audio(self, lecture_url: str) -> pathlib.Path:
+    async def download_audio(self, lecture_url: str, lecture_id: int) -> pathlib.Path:
         """Скачивает аудио/видео лекции и конвертирует в MP3.
         Args:
             lecture_url: URL лекции на BigBlueButton.
+            lecture_id: ID лекции.
         Returns:
-            Путь к сохранённому аудиофайлу.
+            mp3_path: Путь к сохранённому аудиофайлу.
         Raises:
             requests.HTTPError: Если при скачивании произошла ошибка.
         """
@@ -62,7 +63,7 @@ class ParserService:
         audio_url = (
             f"{self.BASE_URL}/presentation/{recording_id}/video/webcams.webm"
         )
-        save_dir = self.PATH_FILES / recording_id / "audio"
+        save_dir = self.PATH_FILES / str(lecture_id) / "audio"
         os.makedirs(save_dir, exist_ok=True)
         mp3_path = save_dir / "lecture.mp3"
 
@@ -120,16 +121,16 @@ class ParserService:
         )
         return slides_base
     
-    def download_slides(self, lecture_url: str) -> pathlib.Path:
+    async def download_slides(self, lecture_url: str, lecture_id: int) -> pathlib.Path:
         """Скачивает все слайды лекции.
         Args:
             lecture_url: URL лекции на BigBlueButton.
+            lecture_id: ID лекции.
         Returns:
-            Путь к директории с сохранёнными слайдами.
+            save_dir: Путь к директории с сохранёнными слайдами.
         """
         slides_base = self.get_slides_url(lecture_url)
-        recording_id = self._extract_recording_id(lecture_url)
-        save_dir = self.PATH_FILES / recording_id / "slides"
+        save_dir = self.PATH_FILES / str(lecture_id) / "presentation"
         os.makedirs(save_dir, exist_ok=True)
         i = 1
         while True:
@@ -137,7 +138,9 @@ class ParserService:
             response = self.session.get(slide_url)
             if response.status_code != 200:
                 break
-            with open(save_dir / f"slide{i}.svg", "wb") as f:
+            slide_number = f"{i:04d}"
+            file_path = save_dir / f"slide{slide_number}.svg"
+            with open(file_path, "wb") as f:
                 f.write(response.content)
             i += 1
         return save_dir

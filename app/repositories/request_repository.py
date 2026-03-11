@@ -41,20 +41,26 @@ async def get_request_by_lecture_id(db: AsyncSession, lecture_id: int) -> Reques
     return result.scalar_one_or_none()
 
 
-async def start_processing(db: AsyncSession, request: Request):
+async def start_processing(db: AsyncSession, request_id: int):
+    """Обновление статуса запроса на PROCESSING и установка времени начала обработки"""
+    request = await get_request(db, request_id)
+    if request:
+        request.status = RequestStatus.PROCESSING
+        request.started_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(request)
+    return request
 
-    request.status = RequestStatus.PROCESSING
-    request.started_at = datetime.utcnow()
 
-    await db.commit()
-
-
-async def finish_request(db: AsyncSession, request: Request):
-
-    request.status = RequestStatus.FINISHED
-    request.finished_at = datetime.utcnow()
-
-    await db.commit()
+async def finish_request(db: AsyncSession, request_id: int):
+    """Обновление статуса запроса на FINISHED и установка времени окончания обработки"""
+    request = await get_request(db, request_id)
+    if request:
+        request.status = RequestStatus.FINISHED
+        request.finished_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(request)
+    return request
 
 
 async def update_request_status(
