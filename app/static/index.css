@@ -52,6 +52,7 @@ div #title {
     margin-top: 0;
     margin-right: -11.5px
 }
+
 .logo_text {
     margin-left: -11.5px;
 }
@@ -102,7 +103,7 @@ div #title {
 #response {
     margin-top: 20px;
     font-size: 18px;
-    color: #333;
+    color: #ee0f0f;
 }
 
 #tableSection {
@@ -149,70 +150,99 @@ div #title {
 .lections {
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
+    justify-content: space-between; /* Равномерное распределение */
     font-size: 16px;
-    margin:10px;
-    display: flex;
+    margin: 10px;
     background-color: #f4f4f4;
-    padding: 5px;
+    padding: 5px 15px; /* Добавил горизонтальные отступы */
     border: none;
     box-shadow: inset 3px 3px 7px #4f4f4f;
     border-radius: 10px;
+    min-width: 1200px; /* Минимальная ширина для всех элементов */
+}
+
+/* Общие стили для всех блоков внутри lections */
+.lection_title,
+.lection_name_teacher,
+.lection_time,
+.lection_length,
+.lection_users_count,
+.lection_download_btn {
+    text-align: center;
+    padding: 10px;
+    margin: 0 5px;
+    white-space: nowrap; /* Запрещаем перенос текста */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Фиксированная ширина для каждого элемента */
+.lection_name_teacher {
+    min-width: 200px; /* Имя преподавателя */
+    max-width: 200px;
+    white-space: wrap;
 }
 
 .lection_title {
-    text-align: center;
-    flex: 1;
-    width: 50%;
-    margin-left: 20px;
-}
-
-.lection_name_teacher {
-    text-align: center;
-    flex: 1;
-    margin-left: 20px;
+    max-width: 300px;
+    text-align: left; /* Для длинных названий выравнивание влево */
 }
 
 .lection_time {
-    color: #4f4f4f;
-    text-align: center;
-    flex: 1;
+    min-width: 180px; /* Дата и время */
+    max-width: 180px;
+}
+
+.lection_length {
+    min-width: 100px; /* Продолжительность */
+    max-width: 100px;
+}
+
+.lection_users_count {
+    min-width: 100px; /* Количество пользователей */
+    max-width: 100px;
 }
 
 .lection_download_btn {
-    margin: 20px;
-    text-align: center;
-    margin-right: 20px;
-    border: none;
-    width: 170px;
-    justify-content: center;
-    align-items: center;
+    min-width: 170px; /* Кнопка */
+    max-width: 170px;
+    margin: 10px;
     background-color: #1a315f;
     border-radius: 4px;
-    font-size: 16px;
+    padding: 0; /* Убираем паддинги для кнопки */
 }
 
-.lecture_download_a {
+.lection_download_btn a {
+    display: block;
     color: #efefef;
     text-decoration: none;
     width: 100%;
     line-height: 50px;
     cursor: pointer;
+    border-radius: 4px;
 }
 
-.lection_download_a:hover {
+.lection_download_btn a:hover {
     background-color: #0056b3;
 }
 
-
-
-.lection_name {
-    padding: 10px;
-}
-
-.lection_time {
-    padding: 10px;
+/* Для мобильных устройств - адаптация */
+@media (max-width: 1200px) {
+    .lections {
+        min-width: auto;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .lection_name_teacher,
+    .lection_title,
+    .lection_time,
+    .lection_length,
+    .lection_users_count,
+    .lection_download_btn {
+        min-width: auto;
+        flex: 1 1 auto;
+    }
 }
 
 .overlay {
@@ -253,4 +283,15 @@ div #title {
 
 .hidden.visible {
     opacity: 1;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes loading {
+    0% { width: 0%; }
+    50% { width: 100%; }
+    100% { width: 0%; }
 }

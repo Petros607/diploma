@@ -34,6 +34,9 @@ Windows
 ## 3. Установка зависимостей
 
 ```
+brew install awscli (На мак!!!)
+```
+```
 pip install -r requirements.txt
 ```
 
@@ -89,4 +92,16 @@ uvicorn app.main:app --reload
 
 ```
 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+```
+
+---
+
+# Запуск тестов
+
+```
+pytest -vs ./tests/0_test_parser_service.py
+```
+
+```
+pytest -vs ./tests/*
 ```
