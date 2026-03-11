@@ -16,13 +16,9 @@ async def get_list(
     url_room: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Получить список записей лекций по комнате BBB
-    """
-
+    """Получить список записей лекций по комнате BBB"""
     try:
         return await lecture_service.get_room_lectures(url_room, db)
-
     except Exception:
         raise HTTPException(
             status_code=400,
@@ -34,13 +30,9 @@ async def generate(
     url_lecture: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Пользователь начал пайплайн генерации конспекта
-    """
-
+    """Пользователь начал пайплайн генерации конспекта"""
     try:
         return await lecture_service.generate_lecture(url_lecture, db)
-
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -52,13 +44,9 @@ async def get_status(
     url_lecture: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Проверить статус генерации
-    """
-
+    """Проверить статус генерации"""
     try:
         return await lecture_service.get_status(url_lecture, db)
-
     except Exception:
         raise HTTPException(
             status_code=400,
@@ -70,13 +58,9 @@ async def download(
     url_lecture: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Скачать конспект
-    """
-
+    """Скачать конспект"""
     try:
         return await lecture_service.download_summary(url_lecture, db)
-
     except Exception:
         raise HTTPException(
             status_code=400,
