@@ -52,7 +52,7 @@ def test_get_metadata(parser):
 
     url = "https://bbb.ssau.ru/b/zat-vdd-mdu"
 
-    metadata = parser.get_metadata(url)
+    metadata = parser.get_room_metadata(url)
 
     print(f"Metadata for {url}: \n{metadata}")
 
@@ -70,7 +70,7 @@ def test_get_metadata_multiple(parser):
 
     for url, expected_count in expected_counts.items():
 
-        metadata = parser.get_metadata(url)
+        metadata = parser.get_room_metadata(url)
 
         actual_count = len(metadata)
 

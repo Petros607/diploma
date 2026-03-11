@@ -1,50 +1,35 @@
 # app/services/lecture_service.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+import asyncio
 
-from app.services.parser_service import ParserService
+from app.services import ParserService, SpeechService, SummaryService
 from app.models.lecture import Lecture
 from app.models.request import Request
+from app.core.status import RequestStatus
+from app.database import AsyncSessionLocal
+from app.repositories import lecture_repository, request_repository
 
 
 class LectureService:
 
     def __init__(self):
-        self.parser = ParserService()
+        self.parser_service = ParserService()
+        self.speech_service = SpeechService()
+        self.summary_service = SummaryService()
 
     async def get_room_lectures(self, url_room: str, db: AsyncSession):
-
-        metadata = self.parser.get_metadata(url_room)
-
+        """Получение списка лекций для комнаты"""
+        metadata = self.parser_service.get_room_metadata(url_room)
         result = {}
-
         for key, lecture_data in metadata.items():
-
             lecture_url = lecture_data["url"]
-
-            query = await db.execute(
-                select(Lecture).where(Lecture.url == lecture_url)
-            )
-
-            lecture = query.scalar_one_or_none()
-
-            status = "generate"
+            lecture = await lecture_repository.get_lecture_by_url(db, lecture_url)
+            status = RequestStatus.PENDING
 
             if lecture:
-
-                req_query = await db.execute(
-                    select(Request).where(Request.lecture_id == lecture.id)
-                )
-
-                request = req_query.scalar_one_or_none()
-
-                if request:
-
-                    if request.status == "finished":
-                        status = "download"
-
-                    elif request.status in ["created", "started"]:
-                        status = "processing"
+                request = await request_repository.get_request_by_lecture_id(db, lecture.id)
+                status = request.status if request else RequestStatus.PENDING
 
             result[key] = {
                 "name_teacher": lecture_data["name_teacher"],
@@ -57,3 +42,19 @@ class LectureService:
             }
 
         return result
+    
+    async def generate_lecture(self, url_lecture: str, db: AsyncSession):
+        """Обработка запроса на генерацию лекции"""
+        lecture = await lecture_repository.get_lecture_by_url(db, url_lecture)
+
+        if not lecture:
+            lecture = await lecture_repository.create_lecture(db, url_lecture)
+
+        request = await request_repository.create_request(db, lecture_id=lecture.id)
+
+        return {
+            "status": RequestStatus.PENDING,
+            "lecture_id": lecture.id,
+            "request_id": request.id
+        }
+

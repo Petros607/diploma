@@ -80,7 +80,7 @@ function getButtonConfig(lection_url, status) {
         style: ""
     };
     
-    if (status === "download") {
+    if (status === "finished") {
         config.text = "Скачать";
         config.onClick = `handleDownload('${lection_url}', event)`;
         config.className = "download-btn";
@@ -196,7 +196,7 @@ function checkLectureStatus(lection_url, buttonElement) {
     fetch(`/lectures/status?url_lecture=${encodeURIComponent(lection_url)}`)
         .then(response => response.json())
         .then(data => {
-            if (data.status === "download") {
+            if (data.status === "finished") {
                 buttonElement.style.pointerEvents = "auto";
                 buttonElement.style.opacity = "1";
                 buttonElement.textContent = "Скачать";

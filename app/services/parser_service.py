@@ -191,7 +191,7 @@ class ParserService:
             index += 1
         return data
 
-    def get_metadata(self, url: str) -> dict[str, dict]:
+    def get_room_metadata(self, url: str) -> dict[str, dict]:
         """Парсит комнату предмета и получает метаданные всех лекций.
         Args:
             url: URL комнаты предмета на BigBlueButton.
