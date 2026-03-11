@@ -1,3 +1,4 @@
+# app/schemas/transcript.py
 from pydantic import BaseModel, ConfigDict
 
 class TranscriptBase(BaseModel):

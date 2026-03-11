@@ -1,3 +1,4 @@
+# app/schemas/presentation.py
 from pydantic import BaseModel, ConfigDict
 
 class PresentationBase(BaseModel):
