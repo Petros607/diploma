@@ -13,9 +13,9 @@ from app.services.summary_service import SummaryService
 
 class PipelineWorker:
     def __init__(self):
-        self.parser = ParserService()
-        self.speech = SpeechService()
-        self.summary = SummaryService()
+        self.parser_service = ParserService()
+        self.speech_service = SpeechService()
+        self.summary_service = SummaryService()
 
     async def run(self):
         print("Worker started")
@@ -49,12 +49,43 @@ class PipelineWorker:
 
     async def run_parser(self, db, lecture_id):
         print("Parser stage")
-        await self.parser.process_lecture(lecture_id, db)
+        await self.parser_service.parse_lecture(db, lecture_id)
 
     async def run_speech(self, db, lecture_id):
         print("Speech stage")
-        await self.speech.transcribe_lecture(lecture_id, db)
+        # await self.speech.transcribe_lecture(db, lecture_id)
 
     async def run_summary(self, db, lecture_id):
         print("Summary stage")
-        await self.summary.generate_summary(lecture_id, db)
+        # await self.summary.generate_summary(db, lecture_id)
+
+
+def test_get_slides_url(parser, lecture_url):
+
+    slides_url = parser.get_slides_url(lecture_url)
+
+    assert slides_url.startswith("https://bbb.ssau.ru:8443/presentation/")
+    assert slides_url.endswith("svgs/slide")
+
+
+def test_download_slides(parser, lecture_url):
+
+    slides_path = parser.download_slides(lecture_url)
+
+    assert slides_path.exists()
+    assert any(slides_path.iterdir())
+
+
+def test_download_audio(parser, lecture_url):
+
+    audio_path = parser.download_audio(lecture_url)
+
+    length = parser.get_length(str(audio_path))
+
+    print(f"Длина видео: {length} секунд")
+
+    assert audio_path.exists()
+    assert audio_path.name == "lecture.mp3"
+
+    assert isinstance(length, float)
+    assert length > 0

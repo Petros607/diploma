@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.lecture import Lecture
 
 
-async def create_lecture(db: AsyncSession, url: str) -> Lecture:
-    lecture = Lecture(url=url)
+async def create_lecture(db: AsyncSession, url: str, subject: str = "", teacher: str = "", datetime: str = "") -> Lecture:
+    lecture = Lecture(url=url, subject=subject, teacher=teacher, datetime=datetime)
 
     db.add(lecture)
     await db.commit()

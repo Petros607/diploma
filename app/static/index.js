@@ -111,8 +111,18 @@ function handleGenerate(lection_url, event) {
     document.getElementById('response').innerText = '';
     simulate_loading();
 
+    const parentLectureDiv = clickedElement.closest('.lections');
+    const lectureData = {
+        subject: parentLectureDiv.querySelector('.lection_title')?.innerText || '',
+        teacher: parentLectureDiv.querySelector('.lection_name_teacher')?.innerText || '',
+        datetime: parentLectureDiv.querySelector('.lection_time')?.innerText || ''
+    };
     fetch(`/lectures/generate?url_lecture=${encodeURIComponent(lection_url)}`, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(lectureData)
     })
         .then(response => {
             if (!response.ok) {
@@ -124,7 +134,6 @@ function handleGenerate(lection_url, event) {
             document.getElementById('response').innerText = 'Генерация конспекта началась!';
             document.getElementById('response').style.color = '#28a745';
             
-            // Обновляем статус лекции через некоторое время
             setTimeout(() => checkLectureStatus(lection_url, clickedElement), 10000);
         })
         .catch(error => {

@@ -1,5 +1,5 @@
 # app/routers/lecture_router.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -27,12 +27,17 @@ async def get_list(
 
 @router.post("/generate")
 async def generate(
-    url_lecture: str,
+    url_lecture: str = Query(..., description="URL лекции"),
+    request: Request = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Пользователь начал пайплайн генерации конспекта"""
     try:
-        return await lecture_service.generate_lecture(url_lecture, db)
+        data = await request.json()
+        subject = data.get("subject")
+        teacher = data.get("teacher")
+        datetime = data.get("datetime")
+        return await lecture_service.generate_lecture(url_lecture, subject, teacher, datetime, db)
     except Exception as e:
         raise HTTPException(
             status_code=400,

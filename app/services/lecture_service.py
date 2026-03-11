@@ -43,12 +43,12 @@ class LectureService:
 
         return result
     
-    async def generate_lecture(self, url_lecture: str, db: AsyncSession):
+    async def generate_lecture(self, url_lecture: str, subject: str, teacher: str, datetime: str, db: AsyncSession):
         """Обработка запроса на генерацию лекции"""
         lecture = await lecture_repository.get_lecture_by_url(db, url_lecture)
 
         if not lecture:
-            lecture = await lecture_repository.create_lecture(db, url_lecture)
+            lecture = await lecture_repository.create_lecture(db, url_lecture, subject, teacher, datetime)
 
         request = await request_repository.create_request(db, lecture_id=lecture.id)
 
