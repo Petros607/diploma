@@ -40,7 +40,7 @@ class SpeechService:
         return uri
     
     def get_filelist(self) -> list[dict]:
-        """Получение списка файлой в Object Storage"""
+        """Получение списка файлов в Object Storage"""
         response = self.s3.list_objects_v2(
             Bucket=self.bucket
         )
