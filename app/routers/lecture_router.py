@@ -1,4 +1,4 @@
-# app/routers/lectures.py
+# app/routers/lecture_router.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
