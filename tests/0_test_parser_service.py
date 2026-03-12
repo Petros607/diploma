@@ -1,4 +1,4 @@
-# tests/test_parser.py
+# tests/0_test_parser_service.py
 
 """Интеграционный тест"""
 

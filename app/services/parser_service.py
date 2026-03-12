@@ -109,15 +109,15 @@ class ParserService:
         Returns:
             Базовый URL для скачивания слайдов (без номера слайда).
         """
-        recording_id = self._extract_recording_id(lecture_url)
-        json_url = f"{self.BASE_URL}/presentation/{recording_id}/presentation_text.json"
+        recording_id = self._extract_recording_id(lecture_url) #097c80a16ee9277077ca6a347f6e8f9c597b9a62-1759998690614
+        json_url = f"{self.BASE_URL}/presentation/{recording_id}/presentation_text.json" # "https://bbb.ssau.ru:8443/presentation/097c80a16ee9277077ca6a347f6e8f9c597b9a62-1759998690614/presentation_text.json"
         response = self.session.get(json_url)
         content = response.json()
-        presentation_id = list(content.keys())[0]
+        presentation_id = list(content.keys())[1]
         slides_base = (
             f"{self.BASE_URL}/presentation/"
             f"{recording_id}/presentation/"
-            f"{presentation_id}/svgs/slide"
+            f"{presentation_id}/svgs/slide" #2648fa4acbe79cc0a2bbae0297d12d35e139aa64-1759998714887
         )
         return slides_base
     

@@ -4,10 +4,6 @@ from sqlalchemy import select
 import asyncio
 
 from app.services.parser_service import ParserService
-from app.services.speech_service import SpeechService
-from app.services.summary_service import SummaryService
-from app.models.lecture import Lecture
-from app.models.request import Request
 from app.core.status import RequestStatus
 from app.database import AsyncSessionLocal
 from app.repositories import lecture_repository, request_repository
@@ -17,8 +13,6 @@ class LectureService:
 
     def __init__(self):
         self.parser_service = ParserService()
-        self.speech_service = SpeechService()
-        self.summary_service = SummaryService()
 
     async def get_room_lectures(self, url_room: str, db: AsyncSession):
         """Получение списка лекций для комнаты"""
