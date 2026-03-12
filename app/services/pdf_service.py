@@ -74,8 +74,14 @@ class PdfService:
         self._write_text(f"Тайминг: {timing} сек")
         self.pdf.ln(6)
 
-        # Вставка слайда
-        svg_path = Path(slides_dir) / f"slide{slide_number}.svg"
+        # Вставка слайда - используем индекс для поиска файла
+        slides_path = Path(slides_dir)
+        # Пробуем найти файл с нулевым форматированием (slide0001.svg, slide0002.svg)
+        svg_path = slides_path / f"slide{slide_index:04d}.svg"
+        if not svg_path.exists():
+            # Или без нулевого форматирования (slide1.svg, slide2.svg)
+            svg_path = slides_path / f"slide{slide_index}.svg"
+        
         if svg_path.exists():
             png_path = await self._svg_to_png(svg_path)
             # Рассчитываем размер изображения с учетом доступной ширины
