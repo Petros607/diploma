@@ -208,3 +208,6 @@ __marimo__/
 
 local.txt
 temp/
+data/*
+!data/test/
+!data/test/**

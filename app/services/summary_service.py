@@ -25,7 +25,7 @@ class SummaryService:
             verify_ssl_certs=False
         )
 
-    def summarize_from_file(self, file_path: str) -> str:
+    async def summarize_from_file(self, file_path: str) -> str:
         """
         Читает текст из файла и создает его краткий конспект
         
@@ -74,15 +74,6 @@ class SummaryService:
 Текст:
 {text}
 """
-        # response = self.client.chat(
-        #     messages=[
-        #         {
-        #             "role": "user",
-        #             "content": prompt
-        #         }
-        #     ]
-        # )
-
         response = self.client.chat(prompt)
 
         return response.choices[0].message.content.strip()

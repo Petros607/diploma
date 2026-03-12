@@ -9,7 +9,7 @@ from app.database import Base
 class Request(Base):
     __tablename__ = "requests"
     id = Column(Integer, primary_key=True)
-    lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id", ondelete="CASCADE"), unique=True)
     status = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     started_at = Column(DateTime)

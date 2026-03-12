@@ -3,7 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import asyncio
 
-from app.services import ParserService, SpeechService, SummaryService
+from app.services.parser_service import ParserService
+from app.services.speech_service import SpeechService
+from app.services.summary_service import SummaryService
 from app.models.lecture import Lecture
 from app.models.request import Request
 from app.core.status import RequestStatus

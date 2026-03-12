@@ -27,8 +27,9 @@ async def set_transcript_path(
     db: AsyncSession,
     transcript: Transcript,
     transcript_path: str
-):
-
-    transcript.transcript_path = transcript_path
-
-    await db.commit()
+) -> Transcript:
+    if transcript:
+        transcript.transcript_path = transcript_path
+        await db.commit()
+        await db.refresh(transcript)
+    return transcript

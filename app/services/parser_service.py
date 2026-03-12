@@ -63,9 +63,9 @@ class ParserService:
         audio_url = (
             f"{self.BASE_URL}/presentation/{recording_id}/video/webcams.webm"
         )
-        save_dir = self.PATH_FILES / str(lecture_id) / "audio"
+        save_dir = self.PATH_FILES / str(lecture_id)
         os.makedirs(save_dir, exist_ok=True)
-        mp3_path = save_dir / "lecture.mp3"
+        mp3_path = save_dir / "audio.mp3"
 
         response = self.session.get(audio_url, stream=True)
         response.raise_for_status()
