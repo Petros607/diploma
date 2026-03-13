@@ -43,10 +43,12 @@ class PdfService:
         self._write_text(f"Количество слайдов: {len(slides)}")
         self.pdf.ln(10)
 
-        # Основные слайды
-        for i, slide in enumerate(slides, 1):
-            self.pdf.add_page()
-            await self._render_slide(slide, slides_dir, i)
+        # Начинаем основной блок — добавляем новый лист перед первым слайдом
+        self.pdf.add_page()
+
+        # Обрабатываем каждый слайд один за другим, без искусственного разрыва страницы
+        for slide in slides:
+            await self._render_slide(slide, slides_dir)
 
         self.pdf.output(output_path)
         return output_path
@@ -56,11 +58,14 @@ class PdfService:
         pattern = r"---Слайд\s+(\d+)\nТайминг:\s*(\d+)\s*сек\n\n(.*?)(?=\n---Слайд|\Z)"
         return [{"slide": int(n), "time": int(t), "text": c.strip()} for n, t, c in re.findall(pattern, text, re.S)]
 
-    async def _render_slide(self, slide: dict, slides_dir: str, slide_index: int = 0):
+    async def _render_slide(self, slide: dict, slides_dir: str):
         """Отрисовка одного слайда"""
         slide_number = slide["slide"]
         timing = slide["time"]
         text = slide["text"]
+
+        # отделим блок слайда от предыдущего содержимого
+        self.pdf.ln(8)
 
         # Заголовок слайда
         self.pdf.set_font(self.FONT_FAMILY, "B", 16)
@@ -74,19 +79,16 @@ class PdfService:
         self._write_text(f"Тайминг: {timing} сек")
         self.pdf.ln(6)
 
-        # Вставка слайда - используем индекс для поиска файла
+        # Вставка слайда – имя по реальному номеру слайда
         slides_path = Path(slides_dir)
-        # Пробуем найти файл с нулевым форматированием (slide0001.svg, slide0002.svg)
-        svg_path = slides_path / f"slide{slide_index:04d}.svg"
+        svg_path = slides_path / f"slide{slide_number:04d}.svg"
         if not svg_path.exists():
-            # Или без нулевого форматирования (slide1.svg, slide2.svg)
-            svg_path = slides_path / f"slide{slide_index}.svg"
-        
+            svg_path = slides_path / f"slide{slide_number}.svg"
+
         if svg_path.exists():
             png_path = await self._svg_to_png(svg_path)
-            # Рассчитываем размер изображения с учетом доступной ширины
             page_width = self.pdf.w - self.pdf.l_margin - self.pdf.r_margin
-            max_height = 100  # Максимальная высота изображения в мм
+            max_height = 100
             self.pdf.image(str(png_path), w=page_width, h=max_height)
             self.pdf.ln(6)
 
