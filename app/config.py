@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     yandex_static_secret_key: str = ""
     yandex_folder_id: str = ""
     yandex_bucket: str = ""
+    gigachat_api_key: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",

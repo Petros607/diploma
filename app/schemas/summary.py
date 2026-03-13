@@ -1,3 +1,4 @@
+# app/schemas/summary.py
 from pydantic import BaseModel, ConfigDict
 
 class SummaryBase(BaseModel):

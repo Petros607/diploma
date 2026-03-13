@@ -14,7 +14,7 @@ import av
 class ParserService:
     BASE_URL = "https://bbb.ssau.ru:8443"
     SAMARA_TZ = pytz.timezone("Europe/Samara")
-    PATH_FILES = pathlib.Path("data/temp")
+    PATH_FILES = pathlib.Path("data/")
 
     def __init__(self) -> None:
         """Инициализирует сессию для HTTP-запросов."""
@@ -49,12 +49,13 @@ class ParserService:
         except Exception:
             return fallback
     
-    def download_audio(self, lecture_url: str) -> pathlib.Path:
+    async def download_audio(self, lecture_url: str, lecture_id: int) -> pathlib.Path:
         """Скачивает аудио/видео лекции и конвертирует в MP3.
         Args:
             lecture_url: URL лекции на BigBlueButton.
+            lecture_id: ID лекции.
         Returns:
-            Путь к сохранённому аудиофайлу.
+            mp3_path: Путь к сохранённому аудиофайлу.
         Raises:
             requests.HTTPError: Если при скачивании произошла ошибка.
         """
@@ -62,9 +63,9 @@ class ParserService:
         audio_url = (
             f"{self.BASE_URL}/presentation/{recording_id}/video/webcams.webm"
         )
-        save_dir = self.PATH_FILES / recording_id / "audio"
+        save_dir = self.PATH_FILES / str(lecture_id)
         os.makedirs(save_dir, exist_ok=True)
-        mp3_path = save_dir / "lecture.mp3"
+        mp3_path = save_dir / "audio.mp3"
 
         response = self.session.get(audio_url, stream=True)
         response.raise_for_status()
@@ -108,28 +109,28 @@ class ParserService:
         Returns:
             Базовый URL для скачивания слайдов (без номера слайда).
         """
-        recording_id = self._extract_recording_id(lecture_url)
-        json_url = f"{self.BASE_URL}/presentation/{recording_id}/presentation_text.json"
+        recording_id = self._extract_recording_id(lecture_url) #097c80a16ee9277077ca6a347f6e8f9c597b9a62-1759998690614
+        json_url = f"{self.BASE_URL}/presentation/{recording_id}/presentation_text.json" # "https://bbb.ssau.ru:8443/presentation/097c80a16ee9277077ca6a347f6e8f9c597b9a62-1759998690614/presentation_text.json"
         response = self.session.get(json_url)
         content = response.json()
-        presentation_id = list(content.keys())[0]
+        presentation_id = list(content.keys())[1]
         slides_base = (
             f"{self.BASE_URL}/presentation/"
             f"{recording_id}/presentation/"
-            f"{presentation_id}/svgs/slide"
+            f"{presentation_id}/svgs/slide" #2648fa4acbe79cc0a2bbae0297d12d35e139aa64-1759998714887
         )
         return slides_base
     
-    def download_slides(self, lecture_url: str) -> pathlib.Path:
+    async def download_slides(self, lecture_url: str, lecture_id: int) -> pathlib.Path:
         """Скачивает все слайды лекции.
         Args:
             lecture_url: URL лекции на BigBlueButton.
+            lecture_id: ID лекции.
         Returns:
-            Путь к директории с сохранёнными слайдами.
+            save_dir: Путь к директории с сохранёнными слайдами.
         """
         slides_base = self.get_slides_url(lecture_url)
-        recording_id = self._extract_recording_id(lecture_url)
-        save_dir = self.PATH_FILES / recording_id / "slides"
+        save_dir = self.PATH_FILES / str(lecture_id) / "presentation"
         os.makedirs(save_dir, exist_ok=True)
         i = 1
         while True:
@@ -137,7 +138,9 @@ class ParserService:
             response = self.session.get(slide_url)
             if response.status_code != 200:
                 break
-            with open(save_dir / f"slide{i}.svg", "wb") as f:
+            slide_number = f"{i:04d}"
+            file_path = save_dir / f"slide{slide_number}.svg"
+            with open(file_path, "wb") as f:
                 f.write(response.content)
             i += 1
         return save_dir
@@ -191,7 +194,7 @@ class ParserService:
             index += 1
         return data
 
-    def get_metadata(self, url: str) -> dict[str, dict]:
+    def get_room_metadata(self, url: str) -> dict[str, dict]:
         """Парсит комнату предмета и получает метаданные всех лекций.
         Args:
             url: URL комнаты предмета на BigBlueButton.

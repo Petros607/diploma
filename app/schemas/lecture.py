@@ -1,14 +1,19 @@
+# app/schemas/lecture.py
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 class LectureBase(BaseModel):
     title: str
 
-class LectureCreate(LectureBase):
-    pass
+class LectureCreate(BaseModel):
+    url: str
 
-class LectureResponse(LectureBase):
+
+class LectureResponse(BaseModel):
     id: int
-    created_at: datetime
+    url: str
+    subject: str | None
+    teacher: str | None
+    datetime: str | None
 
     model_config = ConfigDict(from_attributes=True)

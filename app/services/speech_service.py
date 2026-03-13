@@ -30,7 +30,7 @@ class SpeechService:
             "x-folder-id": settings.yandex_folder_id
         }
 
-    def upload_file(self, local_path: str, object_name: str | None = None):
+    async def upload_file(self, local_path: str, object_name: str | None = None):
         """Загрузка файла в Object Storage"""
         local_path = Path(local_path)
         if not object_name:
@@ -65,7 +65,7 @@ class SpeechService:
             print(f"Ошибка при удалении файла {filename}: {e}") #TODO: logger
             return False
     
-    def start_recognition(self, file_uri: str):
+    async def start_recognition(self, file_uri: str):
         """Запуск асинхронного распознавания"""
         payload = {
             "uri": file_uri,
@@ -98,7 +98,7 @@ class SpeechService:
         print("Operation ID:", operation_id)
         return operation_id
     
-    def wait_operation(self, operation_id: str):
+    async def wait_operation(self, operation_id: str):
         """Ожидание завершения операции"""
         while True:
             response = requests.get(
@@ -113,7 +113,7 @@ class SpeechService:
             print("Ожидание распознавания...")
             time.sleep(10)
 
-    def get_result(self, operation_id: str):
+    async def get_result(self, operation_id: str):
         """Получение результата распознавания"""
         response = requests.get(
             f"{self.RESULT_URL}?operation_id={operation_id}",
@@ -128,7 +128,7 @@ class SpeechService:
         seconds = seconds % 60
         return f"{minutes:02d}:{seconds:02d}"
     
-    def parse_result(self, raw_result: str) -> str:
+    async def parse_result(self, raw_result: str) -> str:
         """Преобразование ответа SpeechKit в читаемый текст"""
         lines = raw_result.strip().split("\n")
         segments = []
@@ -157,6 +157,15 @@ class SpeechService:
                 f"{self.ms_to_time(start)} - {self.ms_to_time(end)}\n{text}"
             )
         return "\n".join(formatted)
+    
+    async def save_to_file(self, text: str, filename: str) -> str:
+        """Сохранение текста транскрипта в файл"""
+        path = Path(filename)
+        # создаём директорию если её нет
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+        return str(path)
     
     def transcribe(self, local_audio_path: str):
         """Полный пайплайн транскрипции"""

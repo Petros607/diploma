@@ -8,7 +8,7 @@ from app.database import Base
 class Presentation(Base):
     __tablename__ = "presentations"
     id = Column(Integer, primary_key=True)
-    lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id", ondelete="CASCADE"), unique=True)
     slides_timings = Column(JSON)
     presentation_path = Column(String)
     lecture = relationship("Lecture", back_populates="presentation")

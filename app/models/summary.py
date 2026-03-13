@@ -8,7 +8,7 @@ from app.database import Base
 class Summary(Base):
     __tablename__ = "summaries"
     id = Column(Integer, primary_key=True)
-    lecture_id = Column(Integer, ForeignKey("lectures.id"), unique=True)
+    lecture_id = Column(Integer, ForeignKey("lectures.id", ondelete="CASCADE"), unique=True)
     annotation = Column(Text)
     summary_path = Column(String)
     lecture = relationship("Lecture", back_populates="summary")
