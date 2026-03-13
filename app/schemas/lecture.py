@@ -7,9 +7,9 @@ class LectureBase(BaseModel):
 
 class LectureCreate(BaseModel):
     url: str
-    subject: str | None = ""
-    teacher: str | None = ""
-    datetime: str | None = ""
+    subject: str = ""
+    teacher: str = ""
+    datetime: str = ""
 
 
 class LectureResponse(BaseModel):

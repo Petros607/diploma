@@ -1,7 +1,6 @@
 # app/workers/pipeline_worker.py
 import asyncio
 from pathlib import Path
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,7 +41,7 @@ class PipelineWorker:
                 await self.process_next_job()
             except Exception as err:
                 logger.exception("Неожиданная ошибка в воркере")
-            await asyncio.sleep(5)
+            await asyncio.sleep(10)
 
     async def process_next_job(self) -> None:
         """Получает следующую заявку со статусом PENDING и прогоняет её через этапы."""
@@ -51,12 +50,12 @@ class PipelineWorker:
             if request is None:
                 return
 
-            logger.info("Обработка заявки %s", request.id)
+            logger.info(f"Обработка заявки {request.id}")
             await request_repository.start_processing(db, request.id)
 
             lecture = await lecture_repository.get_lecture(db, request.lecture_id)
             if lecture is None:
-                logger.warning("Lecture %s not found for request %s", request.lecture_id, request.id)
+                logger.warning(f"Lecture {request.lecture_id} not found for request {request.id}")
                 await request_repository.update_request_status(db, request.id, RequestStatus.FAILED)
                 return
 
@@ -72,11 +71,11 @@ class PipelineWorker:
 
                 await request_repository.finish_request(db, request.id)
             except Exception:
-                logger.exception("Пайплайн не удалось выполнить для заявки %s", request.id)
+                logger.exception(f"Пайплайн не удалось выполнить для заявки {request.id}")
                 await request_repository.update_request_status(db, request.id, RequestStatus.FAILED)
 
     async def run_parser(self, db: AsyncSession, lecture) -> object:
-        logger.info("Этап парсинга для лекции %s", lecture.id)
+        logger.info(f"Этап парсинга для лекции {lecture.id}")
 
         presentation_dir = await self.parser_service.download_slides(lecture.url, lecture.id)
         # generate simple timing map: index**2 -> index
@@ -104,7 +103,7 @@ class PipelineWorker:
         return transcript
 
     async def run_speech(self, db: AsyncSession, lecture, transcript) -> Path:
-        logger.info("Этап распознавания речи для лекции %s", lecture.id)
+        logger.info(f"Этап распознавания речи для лекции {lecture.id}")
 
         uri = await self.speech_service.upload_file(transcript.audio_path)
         operation_id = await self.speech_service.start_recognition(uri)
@@ -125,7 +124,7 @@ class PipelineWorker:
         return saved_path
 
     async def run_summary(self, db: AsyncSession, lecture_id: int, path_to_transcript: Path) -> None:
-        logger.info("Этап обобщения для лекции %s", lecture_id)
+        logger.info(f"Этап обобщения для лекции {lecture_id}")
 
         presentation = await presentation_repository.get_presentation_by_lecture_id(db, lecture_id)
         slide_timings = presentation.slides_timings
@@ -146,7 +145,7 @@ class PipelineWorker:
         )
 
     async def run_pdf(self, db: AsyncSession, lecture_id: int) -> None:
-        logger.info("Этап генерации PDF для лекции %s", lecture_id)
+        logger.info(f"Этап генерации PDF для лекции {lecture_id}")
 
         summary = await summary_repository.get_summary_by_lecture_id(db, lecture_id)
         presentation = await presentation_repository.get_presentation_by_lecture_id(db, lecture_id)

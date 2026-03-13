@@ -25,7 +25,6 @@ async def get_list(
     """Получить список записей лекций по комнате BBB"""
     try:
         lectures = await lecture_service.get_room_lectures(url_room, db)
-        # FastAPI will coerce the dict to RoomLecturesResponse automatically
         return lectures
     except Exception as e:
         raise HTTPException(
