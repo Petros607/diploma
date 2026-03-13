@@ -50,7 +50,7 @@ def test_get_status_with_existing_request(monkeypatch, lecture_service, dummy_db
         lecture_service.get_status("any", dummy_db)
     )
     loop.close()
-    assert status == {"status": RequestStatus.FINISHED}
+    assert status.status == RequestStatus.FINISHED
 
 
 def test_get_status_when_lecture_missing(monkeypatch, lecture_service, dummy_db):
@@ -67,7 +67,7 @@ def test_get_status_when_lecture_missing(monkeypatch, lecture_service, dummy_db)
         lecture_service.get_status("any", dummy_db)
     )
     loop.close()
-    assert status == {"status": RequestStatus.PENDING}
+    assert status.status == RequestStatus.PENDING
 
 
 def test_download_summary_success(tmp_path, monkeypatch, lecture_service, dummy_db):
