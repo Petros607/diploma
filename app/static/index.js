@@ -88,7 +88,7 @@ function getButtonConfig(lection_url, status) {
     
     if (status === "processing") {
         config.text = "Генерируется...";
-        config.onClick = "return false;"; // Ничего не делает при клике
+        config.onClick = "return false;";
         config.className = "processing-btn";
         config.style = "pointer-events:none;opacity:0.6;";
     }
@@ -117,12 +117,17 @@ function handleGenerate(lection_url, event) {
         teacher: parentLectureDiv.querySelector('.lection_name_teacher')?.innerText || '',
         datetime: parentLectureDiv.querySelector('.lection_time')?.innerText || ''
     };
-    fetch(`/lectures/generate?url_lecture=${encodeURIComponent(lection_url)}`, {
+    fetch(`/lectures/generate`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(lectureData)
+        body: JSON.stringify({
+            url: lection_url,
+            subject: lectureData.subject,
+            teacher: lectureData.teacher,
+            datetime: lectureData.datetime
+        })
     })
         .then(response => {
             if (!response.ok) {
@@ -155,46 +160,49 @@ function handleGenerate(lection_url, event) {
 
 function handleDownload(lection_url, event) {
     event.preventDefault();
-    document.getElementById('response').innerText = '';
+    const responseBlock = document.getElementById('response');
+    responseBlock.innerText = '';
     simulate_loading();
 
     fetch(`/lectures/download?url_lecture=${encodeURIComponent(lection_url)}`)
-        .then(response => {
+        .then(async response => {
+
+            const contentType = response.headers.get("content-type");
             if (!response.ok) {
-                throw new Error('Ошибка загрузки');
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    throw new Error(data.detail || "Ошибка скачивания");
+                }
+                throw new Error("Ошибка загрузки файла");
             }
-            
-            // Проверяем тип контента
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                // Если пришёл JSON с ошибкой
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Ошибка при скачивании');
-                });
-            }
-            
+
             return response.blob();
         })
         .then(blob => {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            // Можно определять расширение по типу файла, но пока оставим .txt
-            link.download = 'conspect.txt';
+
+            const link = document.createElement("a");
+            const url = window.URL.createObjectURL(blob);
+
+            link.href = url;
+            link.download = "lecture.pdf";
+
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-            
-            document.getElementById('response').innerText = 'Конспект успешно скачан!';
-            document.getElementById('response').style.color = '#28a745';
+            link.remove();
+
+            window.URL.revokeObjectURL(url);
+
+            responseBlock.innerText = "Конспект успешно скачан!";
+            responseBlock.style.color = "#28a745";
+
             setTimeout(() => {
-                document.getElementById('response').innerText = '';
+                responseBlock.innerText = "";
             }, 3000);
         })
         .catch(error => {
-            document.getElementById('response').innerText = error.message || 'Ошибка загрузки файла';
-            document.getElementById('response').style.color = '#dc3545';
-            console.error('Error:', error);
+            responseBlock.innerText = error.message || "Ошибка загрузки файла";
+            responseBlock.style.color = "#dc3545";
+            console.error("Download error:", error);
         })
         .finally(() => {
             overlay.style.display = "none";

@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     yandex_bucket: str = ""
     gigachat_api_key: str = ""
 
+    # logging configuration
+    logging_filename: str = "logs/app.log"
+    logging_rotation: str = "10 MB"
+    logging_retention: str = "7 days"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
