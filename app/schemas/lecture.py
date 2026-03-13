@@ -49,6 +49,9 @@ class RoomLecture(BaseModel):
     status: RequestStatus
 
 
-class RoomLecturesResponse(BaseModel):
-    __root__: Dict[str, RoomLecture]
+from pydantic import RootModel
+
+
+class RoomLecturesResponse(RootModel[RoomLecture]):
+    root: Dict[str, RoomLecture]
 

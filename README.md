@@ -79,9 +79,11 @@ alembic upgrade head
 # Запуск сервера
 
 ```
+uvicorn app.main:app
+```
+```
 uvicorn app.main:app --reload
 ```
-
 После запуска API будет доступно по адресу:
 
 ```
