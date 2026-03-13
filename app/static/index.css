@@ -19,7 +19,6 @@ body {
     padding: 20px;
     margin-top: 1rem;
     width: 96%;
-    max-width: 1200px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     text-align: center;
@@ -41,15 +40,18 @@ body {
 }
 
 .logo_text {
-    margin-left: -11.5px;
+    font-size: 2rem;
 }
 
 .logo_k {
-    font-size: 4rem;
+    font-size: 3rem;
+    margin-left: -11.5px;
+    margin-right: -10px;
 }
 
 .logo_bbb {
     color: #1a315f;
+    margin: -8px;
 }
 
 /* ===== поиск ===== */
